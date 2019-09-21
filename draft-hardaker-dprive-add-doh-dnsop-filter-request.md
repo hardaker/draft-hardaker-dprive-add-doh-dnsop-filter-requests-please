@@ -89,6 +89,15 @@ sent as an EDNS0 {{?EDNS0=RFC2671}} option with every DNS request, or
 potentially to just the first DNS request in a stream when using DNS
 over TLS, DNS over DTLS or DNS over DOH for example.
 
+One could argue that clients could accomplish these goals by simply
+using a different resolver.  However, this specifications allows
+decoupling of resolvers and filtering such that a default resolver
+configured in an operating system or application can still use a
+system-level configured filtering mechanism that is independent of
+resolution.  A selection of the best resolver to support resolution
+services can become independent from the best source of malicious or
+other filtering.
+
 ## Requirements notation
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
