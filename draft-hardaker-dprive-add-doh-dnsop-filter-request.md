@@ -66,6 +66,11 @@ over DTLS or DNS over DOH for example.
 
 # Introduction
 
+[DOCUMENT STATUS NOTE: about document status: this specification is
+VERY INCOMPLETE and is at the stage of "discuss whether this is a good
+or bad idea in general", and not at the stage of "your processing
+steps are broken" or, worse "you mispelled misspelled"].
+
 DNS today provides a distributed name resolution database that serves
 as the basis for many technologies, and is the starting point for
 nearly all communication that occurs on the Internet.  Because of
