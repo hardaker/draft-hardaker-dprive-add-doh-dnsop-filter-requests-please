@@ -69,7 +69,13 @@ over DTLS or DNS over DOH for example.
 [DOCUMENT STATUS NOTE: about document status: this specification is
 VERY INCOMPLETE and is at the stage of "discuss whether this is a good
 or bad idea in general", and not at the stage of "your processing
-steps are broken" or, worse "you mispelled misspelled"].
+steps are broken" or, worse "you mispelled misspelled".]
+
+[There are other ways to implement what is described below, but I
+wanted to pick a more novel idea to promote wider thinking than "use
+an RBL like pointer" or "use a HTTPS header for just DOH because
+that's really what triggered the filtering discussions in the first
+place."]
 
 DNS today provides a distributed name resolution database that serves
 as the basis for many technologies, and is the starting point for
