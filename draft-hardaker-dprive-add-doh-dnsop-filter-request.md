@@ -49,7 +49,7 @@ that an upstream recursive resolver perform DNS filtering on behalf of
 a client-requested policy.  This is may be done, for example, under a
 subscription model, where the client wishes not to get redirected
 to domains known to host malware or malicious content.  This request
-is sent as an EDNS0 extension with every DNS request, or potentially
+is sent as an EDNS0 option with every DNS request, or potentially
 to just the first DNS request in a stream when using DNS over TLS, DNS
 over DTLS or DNS over DOH for example.
 
@@ -67,18 +67,18 @@ being encrypted from client to recursive resolver by technologies such
 as {{?DNSTLS=RFC7858}} and {{?DOH=RFC8484}}, clients are increasingly
 using encrypted communication to DNS resolvers that may have different
 filtering mechanisms, protective or otherwise, from their Internet
-Service Provider.  This document puts selection of a selective DNS
-filtering service back in the hands of the user, since DNS
+Service Provider (ISP).  This document puts selection of a selective
+DNS filtering service back in the hands of the user, since DNS
 centralization threatens to remove client ability to do so.
 
 This document defines a mechanism under which a client can request
 that an upstream recursive resolver perform DNS filtering on behalf of
 a client-requested policy.  This is may be done, for example, under a
-subscription model, where the client wishes not to get redirected
-to domains known to host malware or malicious content.  This request
-is sent as an EDNS0 extension with every DNS request, or potentially
-to just the first DNS request in a stream when using DNS over TLS, DNS
-over DTLS or DNS over DOH for example.
+subscription model, where the client wishes not to get redirected to
+domains known to host malware or malicious content.  This request is
+sent as an EDNS0 {{?EDNS0=RFC2671}} option with every DNS request, or
+potentially to just the first DNS request in a stream when using DNS
+over TLS, DNS over DTLS or DNS over DOH for example.
 
 ## Requirements notation
 
@@ -86,28 +86,131 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in {{?RFC2119}}
 
-# Request Overview {#anothersection}
+# Extension Overview {#anothersection}
 
+## Extension Packet Format
 
-## first subsection
+The EDNS0 option format for passing a filter list to the upstream DNS
+resolver using the following format:
 
-Transport Layer Security (TLS) {{?TLS12=RFC5246}}  says:
+F>                                              1   1   1   1   1   1
+F>      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5  
+F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+F> 0: |                            OPTION-CODE                        |
+F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+F> 2: |                           OPTION-LENGTH                       |
+F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+F> 4: / DNS-REFERENCE-NAME ...                                        /
+F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-> quoting something
+The DNS-REFERENCE-NAME field is a normally encoded DNS NAME that
+is expected to point to a publicly published DNS record from the
+filtering service a client wishes to make use of.  Details of this
+record are documented in {{filterrecord}}.
 
-see {{anothersection}}
+XXX: better text for normally encoded, and compression, etc
+
+# Filter Record Overview {#filterrecord}
+
+Filtering services that wish to publish a DNS domain filter list may
+publish a DNS record containing a URI from which a resolver may fetch
+the current filter list.  This published name MUST be of type TXT and
+MUST begin with _dnsfilter but otherwise may be published at any point
+in the DNS tree.  Multiple records SHOULD be considered as alternate
+fetch points and recursive resolvers supporting this specification
+should fetch the first one available and then continue with the steps
+outlined in {{resolverprocessing}}.
+
+Example:
+
+F> _dnsfilter.example.com 86400 IN TXT "https://dnsfilter.example.org/"
+
+# ISP signalling
+
+ISPs may signal suggested filtering lists to their clients via
+... DHCP?  (because one this document starting fight isn't enough)
+
+Maybe a DNS request hosted by the dhcp configured resolver?
+
+At the first search path ?  ha ha ... fight 3
+
+[aka: ideas welocme here.]
+
+# Resolver processing {#resolverprocessing}
+
+Recursive resolvers supporting this specification should perform the
+following steps upon receiving a request with a DNS-FILTER-NAME
+option.
+
+1. If the recursive resolver does not support filtering, it should
+   process the DNS request as normal and return an Extended DNS Error
+   (EDE) error of "filteringNotSupported" along with the response.
+   Stop.
+
+1. If the DNS-FILTER-NAME is not currently in its cached set of DNS
+   filters, it should attempt to resolver the name pointed to by the
+   DNS-FILTER-NAME record.  The list of returned URLs should attempted
+   to be fetched, and the first successful download should be stored
+   in a filter cache along with the DNS-FILTER-Name and the cache
+   length returned by the URL server [XXX: what's the HTTP field; I
+   forget].  If no URL can be successfully retrieved, then the
+   resolver should continue to process the DNS request without
+   applying a filter and return an EDE error of "filteringUnavailable".
+   
+1. The filter list returned by the URL must be of type text/plain, and
+   must be a simple list of domain names that are to be blocked as
+   requested.  Names encode in the list MUST domain names, as encoded
+   in printed zone-format names including any required
+   internationalization support.  The names MUST not include a leading
+   or trailing dot.  For simplicity, no wild-carding is supported and
+   a prefix of "*." is assumed.  Partial end-matches MUST NOT but
+   considered a match.  For example, a domain
+   "horrible.football.example.org" will match a filter entry of
+   "football.example.com" but MUST NOT match an entry of
+   "ball.example.org".  See {{examplefilters}} for an example of what
+   a filter list may look like.  If the client's request matches a
+   filter in the requested filter list, a response is sent to the
+   client with an REFUSED RCODE and a EDE error code of "errfiltered
+   (18)".
+   
+1. The resolver should continue normal resolution of the client's
+   request.
+
+XXX: should we add a 'stop' or 'continue' on error bit to the EDNS0 option?
+
+## Example Filter List {#examplefilters}
+
+An example filter list might include the following name list:
+
+F> example.com
+F> malware.example.org
+F> notforchildren.subdomain.example.org
+F> example
+F> [need an internationalization example here]
+
+Note that the last example matches everything under the 'example' TLD
 
 # Security Considerations
 
-Are important
+Modification, addition or removal of the EDNS0 option by
+device-in-the-middle attackers may cause unintended consequences for
+clients hoping to apply (or avoid) filtering.  It is advisable that
+DNS requests that make use of this option send it over an
+authenticated transport such as {{DNSTLS}} or {{DOH}}.
+
+Similarly, providers of DNS FILTERING lists SHOULD published their
+DNS-FILTER-NAME within a DNSSEC signed zone.  They SHOULD offer (and
+require) URLs that make use of protected transports, such as
+{{HTTPS}}.
 
 # IANA Considerations
 
-This document makes no request of IANA.
+This document adds two new EDE codes to the {{EDE}} specification: 
+filteringNotSupported and filteringUnavailable.
 
 --- back
 
 # Acknowledgments
 {:numbered="false"}
 
-peeps that helped go here
+peeps that help out will go here
