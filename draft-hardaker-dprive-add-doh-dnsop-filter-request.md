@@ -44,19 +44,50 @@ informative:
 
 --- abstract
 
-Write something
-
+This document defines a mechanism under which a client can request
+that an upstream recursive resolver perform DNS filtering on behalf of
+a client-requested policy.  This is may be done, for example, under a
+subscription model, where the client wishes not to get redirected
+to domains known to host malware or malicious content.  This request
+is sent as an EDNS0 extension with every DNS request, or potentially
+to just the first DNS request in a stream when using DNS over TLS, DNS
+over DTLS or DNS over DOH for example.
 
 --- middle
 
 # Introduction
 
-A successful protocol {{?SUCCESS=RFC5218}} ...
+DNS today provides a distributed name resolution database that serves
+as the basis for many technologies, and is the starting point for
+nearly all communication that occurs on the Internet.  Because of
+this, it frequently serves as a filtering mechanism by Network
+Providers who which to institute DNS filtering or data modification
+technologies, for better or worse.  As DNS is pushing further into
+being encrypted from client to recursive resolver by technologies such
+as {{?DNSTLS=RFC7858}} and {{?DOH=RFC8484}}, clients are increasingly
+using encrypted communication to DNS resolvers that may have different
+filtering mechanisms, protective or otherwise, from their Internet
+Service Provider.  This document puts selection of a selective DNS
+filtering service back in the hands of the user, since DNS
+centralization threatens to remove client ability to do so.
 
+This document defines a mechanism under which a client can request
+that an upstream recursive resolver perform DNS filtering on behalf of
+a client-requested policy.  This is may be done, for example, under a
+subscription model, where the client wishes not to get redirected
+to domains known to host malware or malicious content.  This request
+is sent as an EDNS0 extension with every DNS request, or potentially
+to just the first DNS request in a stream when using DNS over TLS, DNS
+over DTLS or DNS over DOH for example.
 
-# Another section {#anothersection}
+## Requirements notation
 
-Another section
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in {{?RFC2119}}
+
+# Request Overview {#anothersection}
+
 
 ## first subsection
 
