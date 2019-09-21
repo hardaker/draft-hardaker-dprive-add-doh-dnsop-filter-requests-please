@@ -17,30 +17,39 @@ author:
 
 normative:
 
+  DNSTLS:
+    title: "Specification for DNS over Transport Layer Security (TLS)"
+    author:
+
+   - 
+     ins: S. Dickinson
+     name: Sara Dickinson
+   - 
+     ins: D. Kahn Gillmor
+     name: Daniel Kahn Gillmor
+   - 
+     ins: Z. Hu
+     name: Zi Hu
+   - 
+     ins: L. Zhu
+     name: Liang Zhu
+   - 
+     ins: J. Heidemann
+     name: John Heidemann
+   - 
+     ins: A. Mankin
+     name: Allison Mankin
+   - 
+     ins: D. Wessels
+     name: Duane Wessels
+   - 
+     ins: P. Hoffman
+     name: Paul Hoffman
+
+    date: 2016
+    target: ""
 
 informative:
-  HASH:
-    title: "Deploying a New Hash Algorithm"
-    author:
-      -
-        ins: S. Bellovin
-        name: Steven M. Bellovin
-      -
-        ins: E. Rescorla
-        name: Eric M. Rescorla
-    date: 2006
-    target: "https://www.cs.columbia.edu/~smb/papers/new-hash.pdf"
-    seriesinfo: "Proceedings of NDSS '06"
-
-  SNI:
-    title: "Accepting that other SNI name types will never work"
-    author:
-      -
-        ins: A. Langley
-        name: Adam Langley
-    date: 2016-03-03
-    target: "https://mailarchive.ietf.org/arch/msg/tls/1t79gzNItZd71DwwoaqcQQ_4Yxc"
-
 
 --- abstract
 
