@@ -90,15 +90,16 @@ document are to be interpreted as described in {{?RFC2119}}
 The EDNS0 option format for passing a filter list to the upstream DNS
 resolver using the following format:
 
-F>                                              1   1   1   1   1   1
-F>      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5  
-F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-F> 0: |                            OPTION-CODE                        |
-F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-F> 2: |                           OPTION-LENGTH                       |
-F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-F> 4: / DNS-REFERENCE-NAME ...                                        /
-F>    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+~~~
+     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5  
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+0: |                            OPTION-CODE                        |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+2: |                           OPTION-LENGTH                       |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+4: / DNS-REFERENCE-NAME ...                                        /
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+~~~
 
 The DNS-REFERENCE-NAME field is a normally encoded DNS NAME that
 is expected to point to a publicly published DNS record from the
