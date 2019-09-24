@@ -16,39 +16,7 @@ author:
     email: ietf@hardakers.net
 
 normative:
-
-  DNSTLS:
-    title: "Specification for DNS over Transport Layer Security (TLS)"
-    author:
-
-   - 
-     ins: S. Dickinson
-     name: Sara Dickinson
-   - 
-     ins: D. Kahn Gillmor
-     name: Daniel Kahn Gillmor
-   - 
-     ins: Z. Hu
-     name: Zi Hu
-   - 
-     ins: L. Zhu
-     name: Liang Zhu
-   - 
-     ins: J. Heidemann
-     name: John Heidemann
-   - 
-     ins: A. Mankin
-     name: Allison Mankin
-   - 
-     ins: D. Wessels
-     name: Duane Wessels
-   - 
-     ins: P. Hoffman
-     name: Paul Hoffman
-
-    date: 2016
-    target: ""
-
+ 
 informative:
 
 --- abstract
@@ -230,16 +198,15 @@ authenticated transport such as {{DNSTLS}} or {{DOH}}.
 Similarly, providers of DNS FILTERING lists SHOULD published their
 DNS-FILTER-NAME within a DNSSEC signed zone.  They SHOULD offer (and
 require) URLs that make use of protected transports, such as
-{{HTTPS}}.
+{{?HTTPS=RFC7540}}.
 
 # IANA Considerations
 
-This document adds two new EDE codes to the {{EDE}} specification: 
+This document adds two new EDE codes to the EDE (xxx: ref) specification: 
 filteringNotSupported and filteringUnavailable.
 
 --- back
 
 # Acknowledgments
-{:numbered="false"}
 
 peeps that help out will go here
