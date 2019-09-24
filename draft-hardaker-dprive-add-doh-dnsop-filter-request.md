@@ -39,11 +39,41 @@ VERY INCOMPLETE and is at the stage of "discuss whether this is a good
 or bad idea in general", and not at the stage of "your processing
 steps are broken" or, worse "you mispelled misspelled".]
 
+## Purpose of this document
+
 [There are other ways to implement what is described below, but I
 wanted to pick a more novel idea to promote wider thinking than "use
 an RBL like pointer" or "use a HTTPS header for just DOH because
 that's really what triggered the filtering discussions in the first
 place."]
+
+Right now, the DNS ecosystem is being used in a multitude of ways that
+are intricately bound together based on its evolution over time.  One
+significant issue that has arisen is under the proposed deployment
+models for {{?DOH=RFC8484}} in which Applications Doing DNS (in the
+ADD pseudo-WG) may bypass traditional DNS resolvers within ISPs,
+alleviating those ISPs from offering protection services through DNS
+filtering.  DNS resolvers are thus acting as both a DNS resolution
+service, as originally intended, and as a control point by offering
+filtering (and rewriting) services on behalf of the client, the ISP,
+and policies imposed by enterprises/organizations and governments.
+
+This document is an attempt to see if those two roles can be severed
+some, so users in an {{DOH}} world can select filtering policies that
+best suit their access requirements.  It specifically does not allow
+for rewriting but only for filtering.
+
+There are many other ways such a policy transmission feature could be
+implemented.  DNS real-time blacklist (DNSRBL) like techniques could
+be used, ISPs could publish policy pointers under the DNS reverse
+tree, clients could publish policies within HTTP headers (limiting its
+use to just DoH), ...  I selected the one below as the "most out of
+the box" to promote thinking, not because I expect it to be the best
+option.  Specifically, I have doubts that public large scale DoH
+providers will want to memorize large numbers of published policy
+lists (and hence, DNSRBL may be the best choice).
+
+## Real Introduction
 
 DNS today provides a distributed name resolution database that serves
 as the basis for many technologies, and is the starting point for
