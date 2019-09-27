@@ -1,7 +1,7 @@
 ---
 title: "Client DNS Filtering Profile Request"
 abbrev: DNS Filter Request
-docname: draft-hardaker-dprive-add-doh-dnsop-filter-request
+docname: draft-hardaker-dprive-add-doh-dnsop-filter-request-00
 category: info
 ipr: trust200902
 
@@ -169,7 +169,7 @@ fight in this document wasn't enough)
 
 Maybe a DNS request hosted by the dhcp configured resolver?
 
-[aka: ideas welocme here.]
+(aka: ideas welcome here.)
 
 # Resolver processing {#resolverprocessing}
 
