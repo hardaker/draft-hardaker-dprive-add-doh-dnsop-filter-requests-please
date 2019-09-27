@@ -34,12 +34,39 @@ over DTLS or DNS over DOH for example.
 
 # Introduction
 
-[DOCUMENT STATUS NOTE: about document status: this specification is
-VERY INCOMPLETE and is at the stage of "discuss whether this is a good
-or bad idea in general", and not at the stage of "your processing
-steps are broken" or, worse "you mispelled misspelled".]
+[DOCUMENT STATUS NOTE: this specification is VERY INCOMPLETE and is at
+the stage of "discuss whether this is a good or bad idea in general",
+and not at the stage of "your processing steps are broken" or, worse
+"you mispelled misspelled".  Keep reading for further background.]
 
 ## Purpose of this document
+
+Right now, the DNS ecosystem is being used in a multitude of ways that
+are intricately bound together based on its evolution over time.  DNS
+resolvers today are acting as both a DNS resolution service, as
+originally intended, and as a control point by offering filtering (and
+rewriting) services on behalf of the client, the ISP, and policies
+imposed by enterprises/organizations and governments.  One significant
+issue that has arisen under some proposed deployment architectures for
+{{?DOH=RFC8484}} in which Applications Doing DNS (in the ADD
+pseudo-WG) may bypass traditional DNS resolvers within ISPs,
+alleviating those ISPs from offering DNS-based filtering and
+protection services.
+
+This document is an attempt to see if those two roles can be safely
+severed, so users in an {{DOH}} world can select a resolver that best
+suits their resolution policies and separately select filtering
+policies that best suit their access requirements.
+
+There are many other ways such a policy transmission feature could be
+implemented.  DNS real-time blacklist (DNSRBL) like techniques could
+be used, ISPs could publish policy pointers under the DNS reverse
+tree, DoH clients could publish policies within HTTP headers (limiting
+its use to just DoH), ...  I selected the one below as the "most out
+of the box" to promote thinking, not because I expect it to be the
+best option.  Specifically, I have doubts that public large scale DoH
+providers will want to memorize large numbers of published policy
+lists (and hence, DNSRBL may actually be a better choice).
 
 [There are other ways to implement what is described below, but I
 wanted to pick a more novel idea to promote wider thinking than "use
@@ -47,65 +74,41 @@ an RBL like pointer" or "use a HTTPS header for just DOH because
 that's really what triggered the filtering discussions in the first
 place."]
 
-Right now, the DNS ecosystem is being used in a multitude of ways that
-are intricately bound together based on its evolution over time.  One
-significant issue that has arisen is under the proposed deployment
-models for {{?DOH=RFC8484}} in which Applications Doing DNS (in the
-ADD pseudo-WG) may bypass traditional DNS resolvers within ISPs,
-alleviating those ISPs from offering protection services through DNS
-filtering.  DNS resolvers are thus acting as both a DNS resolution
-service, as originally intended, and as a control point by offering
-filtering (and rewriting) services on behalf of the client, the ISP,
-and policies imposed by enterprises/organizations and governments.
-
-This document is an attempt to see if those two roles can be severed
-some, so users in an {{DOH}} world can select filtering policies that
-best suit their access requirements.  It specifically does not allow
-for rewriting but only for filtering.
-
-There are many other ways such a policy transmission feature could be
-implemented.  DNS real-time blacklist (DNSRBL) like techniques could
-be used, ISPs could publish policy pointers under the DNS reverse
-tree, clients could publish policies within HTTP headers (limiting its
-use to just DoH), ...  I selected the one below as the "most out of
-the box" to promote thinking, not because I expect it to be the best
-option.  Specifically, I have doubts that public large scale DoH
-providers will want to memorize large numbers of published policy
-lists (and hence, DNSRBL may be the best choice).
-
 ## Real Introduction
 
 DNS today provides a distributed name resolution database that serves
 as the basis for many technologies, and is the starting point for
 nearly all communication that occurs on the Internet.  Because of
 this, it frequently serves as a filtering mechanism by Network
-Providers who which to institute DNS filtering or data modification
+Providers who which to deploy DNS filtering or data modification
 technologies, for better or worse.  As DNS is pushing further into
 being encrypted from client to recursive resolver by technologies such
 as {{?DNSTLS=RFC7858}} and {{?DOH=RFC8484}}, clients are increasingly
 using encrypted communication to DNS resolvers that may have different
-filtering mechanisms, protective or otherwise, from their Internet
-Service Provider (ISP).  This document puts selection of a selective
-DNS filtering service back in the hands of the user, since DNS
-centralization threatens to remove client ability to do so.
+or no filtering policies and mechanisms (protective or otherwise),
+than intended by the networking configuration distributed from their
+Internet Service Provider (ISP) or other access point.  This document
+puts the selection of a selective DNS filtering service back in the
+hands of the user, since DNS centralization threatens to remove client
+ability to do so.
 
-This document defines a mechanism under which a client can request
-that an upstream recursive resolver perform DNS filtering on behalf of
-a client-requested policy.  This is may be done, for example, under a
-subscription model, where the client wishes not to get redirected to
-domains known to host malware or malicious content.  This request is
-sent as an EDNS0 {{?EDNS0=RFC2671}} option with every DNS request, or
-potentially to just the first DNS request in a stream when using DNS
-over TLS, DNS over DTLS or DNS over DOH for example.
+Specifically, this document defines a mechanism under which a client
+can request that its upstream recursive resolver perform DNS filtering
+on behalf of a client-requested policy.  This is may be done, for
+example, under a subscription model, where the client wishes not to
+get redirected to domains known to host malware or malicious content.
+This request is sent as an EDNS0 {{?EDNS0=RFC2671}} option with every
+DNS request, or potentially to just the first DNS request in a stream
+when using DNS over TLS, DNS over DTLS or DNS over DOH for example.
 
 One could argue that clients could accomplish these goals by simply
 using a different resolver.  However, this specifications allows
 decoupling of resolvers and filtering such that a default resolver
 configured in an operating system or application can still use a
-system-level configured filtering mechanism that is independent of
-resolution.  A selection of the best resolver to support resolution
-services can become independent from the best source of malicious or
-other filtering.
+system-level configured filtering mechanism acting independently of
+resolution.  A client can then select the best resolver to support
+resolution services which can be independent from the best source of
+malicious content or other filtering.
 
 ## Requirements notation
 
@@ -117,8 +120,8 @@ document are to be interpreted as described in {{?RFC2119}}
 
 ## Extension Packet Format
 
-The EDNS0 option format for passing a filter list to the upstream DNS
-resolver using the following format:
+The EDNS0 option format for passing a Filter Request (FR) list to the
+upstream DNS resolver using the following format:
 
 ~~~
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5  
@@ -127,11 +130,11 @@ resolver using the following format:
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 2: |                           OPTION-LENGTH                       |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-4: / DNS-REFERENCE-NAME ...                                        /
+4: / FILTER-NAME ...                                            /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 ~~~
 
-The DNS-REFERENCE-NAME field is a normally encoded DNS NAME that
+The FILTER-NAME field is a normally encoded DNS NAME that
 is expected to point to a publicly published DNS record from the
 filtering service a client wishes to make use of.  Details of this
 record are documented in {{filterrecord}}.
@@ -151,23 +154,27 @@ outlined in {{resolverprocessing}}.
 
 Example:
 
-F> _dnsfilter.example.com 86400 IN TXT "https://dnsfilter.example.org/"
+~~~
+_dnsfilter.example.com 86400 IN TXT "https://dnsfilter.example.org/"
+~~~
+
+The name "_dnsfilter.example.com" may then be referred to by clients
+in the FR extension packet.
 
 # ISP signalling
 
-ISPs may signal suggested filtering lists to their clients via
-... DHCP?  (because one this document starting fight isn't enough)
+ISPs offering filtering service to their clients may signal suggested
+filtering lists to their clients via ... DHCP?  (because starting one
+fight in this document wasn't enough)
 
 Maybe a DNS request hosted by the dhcp configured resolver?
-
-At the first search path ?  ha ha ... fight 3
 
 [aka: ideas welocme here.]
 
 # Resolver processing {#resolverprocessing}
 
 Recursive resolvers supporting this specification should perform the
-following steps upon receiving a request with a DNS-FILTER-NAME
+following steps upon receiving a request with a FILTER-NAME
 option.
 
 1. If the recursive resolver does not support filtering, it should
@@ -175,11 +182,11 @@ option.
    (EDE) error of "filteringNotSupported" along with the response.
    Stop.
 
-1. If the DNS-FILTER-NAME is not currently in its cached set of DNS
+1. If the FILTER-NAME is not currently in its cached set of DNS
    filters, it should attempt to resolver the name pointed to by the
-   DNS-FILTER-NAME record.  The list of returned URLs should attempted
+   FILTER-NAME record.  The list of returned URLs should attempted
    to be fetched, and the first successful download should be stored
-   in a filter cache along with the DNS-FILTER-Name and the cache
+   in a filter cache along with the FILTER-NAME and the cache
    length returned by the URL server [XXX: what's the HTTP field; I
    forget].  If no URL can be successfully retrieved, then the
    resolver should continue to process the DNS request without
@@ -210,11 +217,13 @@ XXX: should we add a 'stop' or 'continue' on error bit to the EDNS0 option?
 
 An example filter list might include the following name list:
 
-F> example.com
-F> malware.example.org
-F> notforchildren.subdomain.example.org
-F> example
-F> [need an internationalization example here]
+~~~
+example.com
+malware.example.org
+notforchildren.subdomain.example.org
+example
+[need an internationalization example here]
+~~~
 
 Note that the last example matches everything under the 'example' TLD
 
@@ -227,7 +236,7 @@ DNS requests that make use of this option send it over an
 authenticated transport such as {{DNSTLS}} or {{DOH}}.
 
 Similarly, providers of DNS FILTERING lists SHOULD published their
-DNS-FILTER-NAME within a DNSSEC signed zone.  They SHOULD offer (and
+FILTER-NAME within a DNSSEC signed zone.  They SHOULD offer (and
 require) URLs that make use of protected transports, such as
 {{?HTTPS=RFC7540}}.
 
