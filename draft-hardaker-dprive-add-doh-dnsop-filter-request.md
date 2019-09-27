@@ -2,7 +2,7 @@
 title: "Client DNS Filtering Profile Request"
 abbrev: DNS Filter Request
 docname: draft-hardaker-dprive-add-doh-dnsop-filter-request-00
-category: info
+category: std
 ipr: trust200902
 
 stand_alone: yes
